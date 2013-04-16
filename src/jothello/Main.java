@@ -1,10 +1,22 @@
 package jothello;
 
-import org.luaj.vm2.*;
-import org.luaj.vm2.lib.jse.*;
+import java.util.Scanner;
 
 public class Main {
-	public static void main(String[] args) {
+	public static void main(String[] args) {		
+
+		Jothello jothello = new Jothello();				
+		Scanner scanner = new Scanner(System.in);
+		
+		do {
+			jothello.printBoard();
+			System.out.println("current turn : " + (jothello.getTurn() == State.DARK ? "DARK" : "LIGHT"));
+			System.out.println("enter coordinate for " + (jothello.getTurn() == State.DARK ? "DARK" : "LIGHT") + " piece (row col) : ");
+			int row = scanner.nextInt();
+			int col = scanner.nextInt();
+			jothello.putPiece(row, col);			
+		}while(jothello.whoWin() == State.NONE);
+		/*
 		String script = "lib/ai.lua";
 		
 		// create an environment to run in
@@ -14,6 +26,7 @@ public class Main {
 		LuaValue chunk = globals.loadFile(script);
 		
 		// Use any of the "call()" or "invoke()" functions directly on the chunk.
-		chunk.call( LuaValue.valueOf(script) );
+		chunk.call( LuaValue.valueOf(script) );		
+		*/		
 	}
 }
