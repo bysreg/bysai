@@ -1,3 +1,5 @@
+require "aif"
+
 math.randomseed(os.time())
 local random = math.random
 local is_log = true
@@ -11,15 +13,15 @@ end
 local g_monteCarlo = {
 	map = {}, 
 	size = 0, 
-	time = 1, 
+	time = 3, 
 }
 
 function monteCarloCreateNode(value, parent)
 	return {value = value, parent = parent, result = 0, visit = 0, childs = {}}
 end
 
-function monteCarloSelect(node)			
-	local num_moves = aiclib.getNumberOfMoves(node.value)
+function monteCarloSelect(node)		
+	local num_moves = aif.getNumberOfMoves(node.value)
 
 	if(num_moves == 0) then
 		return node, -1
@@ -34,7 +36,7 @@ function monteCarloSelect(node)
 		return node.childs[move_index], move_index
 	end
 
-	new_game_state = aiclib.simulate(node.value, move_index)		
+	new_game_state = aif.simulate(node.value, move_index)		
 	
 	if(g_monteCarlo.map[new_game_state] ~= nil) then
 		node.childs[move_index] = g_monteCarlo.map[new_game_state]
@@ -57,13 +59,13 @@ function monteCarloSimulate(node)
 	local current_node = node
 	local num_moves = nil
 	local new_game_state = nil
-	local result = aiclib.whoWin(current_node.value)	
+	local result = aif.whoWin(current_node.value)	
 
 	while(result == 2) do
-		num_moves = aiclib.getNumberOfMoves(current_node.value)
-		new_game_state = aiclib.simulate(current_node.value, random(num_moves)-1)
+		num_moves = aif.getNumberOfMoves(current_node.value)
+		new_game_state = aif.simulate(current_node.value, random(num_moves)-1)
 		current_node = monteCarloCreateNode(new_game_state, current_node)		
-		result = aiclib.whoWin(current_node.value)		
+		result = aif.whoWin(current_node.value)		
 	end	
 
 	--print("result of simulation : ", result)
@@ -78,7 +80,7 @@ end
 function monteCarloSelectFinal(node)
 	local best_move_index = nil	
 	local new_game_state = nil
-	local turn = aiclib.getTurn(node.value)
+	local turn = aif.getTurn(node.value)
 	local best_move_avg = nil
 	local current_avg = nil
 
@@ -95,7 +97,8 @@ function monteCarloSelectFinal(node)
 end
 
 --menerima state game_state dengan jumlah kemungkinan move sebanyak num_moves dengan waktu proses maksimum sebanyak time
-function monteCarlo(game_state, num_moves) 			
+function monteCarlo(game_state, num_moves) 	
+	
 	local start_time = os.time()
 	local time = g_monteCarlo.time
 	local root_node = nil
@@ -110,7 +113,7 @@ function monteCarlo(game_state, num_moves)
 	local last_node = nil
 	local move_index = nil
 
-	while(os.time() - start_time < time) do			
+	while(os.time() - start_time < time) do		
 		current_node = root_node
 		
 		while(move_index ~= -1 and g_monteCarlo.map[current_node.value] ~= nil) do			
@@ -120,7 +123,6 @@ function monteCarlo(game_state, num_moves)
 
 		if(move_index ~= -1) then			
 			monteCarloExpand(current_node, move_index, last_node)
-
 			local result = monteCarloSimulate(current_node) --simulate until terminal node
 			count = count + 1
 			while(current_node ~= nil) do
@@ -132,4 +134,5 @@ function monteCarlo(game_state, num_moves)
 	local best_move = monteCarloSelectFinal(root_node)
 	log("best_move : ", best_move, "tree size : ",g_monteCarlo.size, "current sim count : ", count)	
 	return best_move
+	
 end

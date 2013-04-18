@@ -1,5 +1,8 @@
 package jothello;
 
+import java.awt.Point;
+import java.util.ArrayList;
+
 public class Jothello {
 	
 	protected State state;
@@ -11,6 +14,7 @@ public class Jothello {
 	}
 	
 	public Jothello(String game_state) {		
+		state = new State();
 		for(int i=0;i<8;i++) {
 			for(int j=0;j<8;j++) {
 				state.board[i][j] = (byte) Character.getNumericValue(game_state.charAt(i*8+j));
@@ -35,6 +39,20 @@ public class Jothello {
 		sb.append(state.turn);
 		
 		return sb;
+	}
+	
+	public String getGameStateString() {
+		StringBuilder sb = new StringBuilder(64);
+		
+		for(int i=0;i<8;i++) {
+			for(int j=0;j<8;j++) {				
+				sb.append(state.board[i][j]);				
+			}
+		}
+		
+		sb.append(state.turn);
+		
+		return sb.toString();
 	}
 	
 	public byte getTurn() {
@@ -129,6 +147,18 @@ public class Jothello {
 	
 	public int getNumberOfLegalMoves() {
 		return Jothello.getNumberOfLegalMoves(state);
+	}
+	
+	public ArrayList<Point> getAllLegalMoves() {
+		ArrayList<Point> points = new ArrayList<Point>();
+		for(int i=0;i<8;i++) {
+			for(int j=0;j<8;j++) {
+				if(isLegalMove(i, j))
+					points.add(new Point(j, i));
+			}
+		}
+		
+		return points;
 	}
 	
 	private void nextTurn() {
