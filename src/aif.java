@@ -67,12 +67,17 @@ public class aif extends TwoArgFunction {
 		}
 	}
 
+	// mengeluarkan 1 untuk P1(yang jalan duluan), 2 untuk P2
 	static class getTurn extends OneArgFunction {
 		@Override
 		public LuaValue call(LuaValue arg) {
 			String game_state = arg.checkjstring();
 			Jothello jothello = new Jothello(game_state);
-			return valueOf(jothello.getTurn());
+			byte turn = jothello.getTurn();
+			if(turn == State.DARK)
+				return valueOf(1);
+			else
+				return valueOf(2);			
 		}
 	}
 }

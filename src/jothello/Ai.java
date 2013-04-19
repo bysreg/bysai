@@ -29,8 +29,7 @@ public class Ai {
 		
 		//call the function MyAdd with two parameters 5, and 5
         LuaValue monteCarlo = globals.get("monteCarlo");
-        LuaValue retvals = monteCarlo.call(LuaValue.valueOf(jothello.getGameStateString()), LuaValue.valueOf(jothello.getNumberOfLegalMoves()));
-		
+        LuaValue retvals = monteCarlo.call(LuaValue.valueOf(jothello.getGameStateString()), LuaValue.valueOf(jothello.getNumberOfLegalMoves()));		
 		return legalMoves.get(retvals.toint());
 	}	
 	

@@ -13,7 +13,7 @@ end
 local g_monteCarlo = {
 	map = {}, 
 	size = 0, 
-	time = 3, 
+	time = 1000, 
 }
 
 function monteCarloCreateNode(value, parent)
@@ -83,15 +83,17 @@ function monteCarloSelectFinal(node)
 	local turn = aif.getTurn(node.value)
 	local best_move_avg = nil
 	local current_avg = nil
-
+	
 	for k, v in pairs(node.childs) do		
 		current_avg = v.result / v.visit
 		--print(k, turn, v.result, v.visit, current_avg)
 		if ((best_move_avg == nil) or (turn == 1 and current_avg > best_move_avg) or (turn == 2 and current_avg < best_move_avg)) then
 			best_move_avg = current_avg
-			best_move_index = k			
+			best_move_index = k
 		end
-	end	
+		--print(current_avg, k, best_move_index)
+	end		
+	
 	assert(best_move_index, "error on ai.lua : (monteCarlo) no move selected")	
 	return best_move_index
 end
@@ -130,6 +132,8 @@ function monteCarlo(game_state, num_moves)
 				current_node = current_node.parent
 			end					
 		end
+		
+		--print(os.time() - start_time)
 	end	
 	local best_move = monteCarloSelectFinal(root_node)
 	log("best_move : ", best_move, "tree size : ",g_monteCarlo.size, "current sim count : ", count)	
