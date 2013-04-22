@@ -3,6 +3,7 @@ package jothello;
 import java.awt.Point;
 import java.util.ArrayList;
 
+
 import org.luaj.vm2.Globals;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.JsePlatform;
@@ -10,6 +11,8 @@ import org.luaj.vm2.lib.jse.JsePlatform;
 public class Ai {
 	
 	Globals globals;
+	public final static int CORNER_WEIGHT = 10;
+	public final static double DISC_WEIGHT = 0.01;
 	
 	public Ai() {
 		String script = "lib/ai.lua";

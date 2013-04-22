@@ -1,4 +1,15 @@
-require "aif"
+require "jothello/aif"
+
+--[[
+	for all algorithm : 
+	void aif.getTurn(game_state) : return 1 for P1 and return 2 for P2
+	int aif.getNumberOfMoves(game_state) : return how many legal moves the current player have
+	string aif.simulate(game_state, move_index) : return new game_state given a game_state and a move number move_index(zero-based index)
+	int aif.whoWin(game_state) : return 1 for P1, return -1 for P2, return 0 for draw, and return 2 if the game is not finished yet  
+	
+	for all algorithm with heuristic : 
+	double evaluate(game_state) : return heuristic value for given game_state, if the winner is P1, it should return Double.MAX_VALUE, and if the winner is P2, it should return Double.MIN_VALUE  
+]]
 
 math.randomseed(os.time())
 local random = math.random
@@ -13,7 +24,11 @@ end
 local g_monteCarlo = {
 	map = {}, 
 	size = 0, 
-	time = 1000, 
+	time = 1000, --const
+}
+
+local g_miniMax = {
+	depth = 4,  --const,
 }
 
 function monteCarloCreateNode(value, parent)
@@ -137,6 +152,49 @@ function monteCarlo(game_state, num_moves)
 	end	
 	local best_move = monteCarloSelectFinal(root_node)
 	log("best_move : ", best_move, "tree size : ",g_monteCarlo.size, "current sim count : ", count)	
-	return best_move
+	return best_move	
+end
+
+function miniMax(game_state, num_moves)
+	local node = miniMaxCreateNode(game_state)
+	miniMaxRec(node, g_miniMax.depth, math.huge * -1, math.huge)
+end
+
+function miniMaxCreateNode(state)
+	return {state = state, child = {}}
+end
+
+function miniMaxRec(node, depth, min, max)
+	if(depth == 0) then
+		--terminal node
+		return aif.evaluate(node.state)
+	else
+		local winner = aif.whoWin(node.state)
+		if(winner == 1) then
+			return math.huge
+		elseif(winner == 2) then
+			return math.huge*-1
+		end	
+	end
 	
+	local num_of_childs = aif.getNumberOfMoves(node.state)
+	if(aif.getTurn() == 1) then -- maximizing player
+		local v = min
+		local v_t = nil		
+		for i=0, num_of_childs-1 do
+			local child_node = aif.miniMaxCreateNode(aif.simulate(node.state, i))
+			v_t = miniMaxRec(child_node, depth-1, v, max)
+			if(v_t > v) then v = v_t end
+			if(v >= max) then return max end
+		end
+	else -- minimizing player
+		local v = max
+		local v_t = nil
+		for i=0, num_of_childs-1 do
+			local child_node = aif.miniMaxCreateNode(aif.simulate(node.state, i))
+			v_t = miniMaxRec(child_node, depth-1, min, v)
+			if(v_t < v) then v = v_t end
+			if(v <= min) then return min end
+		end
+	end
 end

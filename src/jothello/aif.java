@@ -1,3 +1,5 @@
+package jothello;
+
 import java.awt.Point;
 import java.util.ArrayList;
 
@@ -23,7 +25,7 @@ public class aif extends TwoArgFunction {
 		library.set("getNumberOfMoves", new getNumberOfMoves());
 		library.set("simulate", new simulate());
 		library.set("whoWin", new whoWin());
-		library.set("getTurn", new getTurn());
+		library.set("getTurn", new getTurn());		
 		env.set("aif", library);
 		return library;
 	}
@@ -79,5 +81,52 @@ public class aif extends TwoArgFunction {
 			else
 				return valueOf(2);			
 		}
+	}
+	
+	//memberikan nilai evaluasi suatu board
+	static class evaluate extends OneArgFunction {
+
+		@Override
+		public LuaValue call(LuaValue arg) {
+			String game_state = arg.checkjstring();
+			Jothello jothello = new Jothello(game_state);
+			
+			int diff_disc_count = 0;		
+			int legal_moves = Jothello.getNumberOfLegalMoves(jothello.state.board, State.DARK) - Jothello.getNumberOfLegalMoves(jothello.state.board, State.LIGHT);
+			int corner = 0;					
+			
+			for(int i=0;i<8;i++) {
+				for(int j=0;j<8;j++) {
+					if(jothello.state.board[i][j] == State.DARK) {
+						diff_disc_count++;					
+					}else if(jothello.state.board[i][j] == State.LIGHT) {
+						diff_disc_count--;
+					}
+				}
+			}				
+			
+			if(jothello.state.board[0][0] == State.DARK) 
+				corner += Ai.CORNER_WEIGHT * 1;
+			else if(jothello.state.board[0][0] == State.LIGHT)
+				corner += Ai.CORNER_WEIGHT * -1;
+			
+			if(jothello.state.board[7][0] == State.DARK) 
+				corner += Ai.CORNER_WEIGHT * 1;
+			else if(jothello.state.board[7][0] == State.LIGHT)
+				corner += Ai.CORNER_WEIGHT * -1;
+			
+			if(jothello.state.board[0][7] == State.DARK) 
+				corner += Ai.CORNER_WEIGHT * 1;
+			else if(jothello.state.board[0][7] == State.LIGHT)
+				corner += Ai.CORNER_WEIGHT * -1;
+			
+			if(jothello.state.board[7][7] == State.DARK) 
+				corner += Ai.CORNER_WEIGHT * 1;
+			else if(jothello.state.board[7][7] == State.LIGHT)
+				corner += Ai.CORNER_WEIGHT * -1;
+			
+			return valueOf(legal_moves + diff_disc_count * Ai.DISC_WEIGHT + corner);					
+		}
+		
 	}
 }
