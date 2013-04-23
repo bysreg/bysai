@@ -35,7 +35,7 @@ public class aif extends TwoArgFunction {
 		public LuaValue call(LuaValue arg) {
 			String game_state = arg.checkjstring();
 			Jothello jothello = new Jothello(game_state);
-			return valueOf(jothello.getNumberOfLegalMoves());
+			return valueOf(jothello.getNumberOfMovesWithPass());
 		}
 	}
 
@@ -44,7 +44,7 @@ public class aif extends TwoArgFunction {
 			String game_state = arg0.checkjstring();
 			int move_num = arg1.checkint();
 			Jothello jothello = new Jothello(game_state);
-			ArrayList<Point> legalMoves = jothello.getAllLegalMoves();
+			ArrayList<Point> legalMoves = jothello.getAllMoves();
 			jothello.putPiece(legalMoves.get(move_num).y,
 					legalMoves.get(move_num).x);
 			return valueOf(jothello.getGameStateString());
@@ -93,7 +93,7 @@ public class aif extends TwoArgFunction {
 			Jothello jothello = new Jothello(game_state);
 			
 			int diff_disc_count = 0;		
-			int legal_moves = Jothello.getNumberOfLegalMoves(jothello.state.board, State.DARK) - Jothello.getNumberOfLegalMoves(jothello.state.board, State.LIGHT);
+			int legal_moves = Jothello.getNumberOfMoves(jothello.state.board, State.DARK) - Jothello.getNumberOfMoves(jothello.state.board, State.LIGHT);
 			int corner = 0;					
 			
 			for(int i=0;i<8;i++) {
@@ -128,6 +128,5 @@ public class aif extends TwoArgFunction {
 			
 			return valueOf(legal_moves + diff_disc_count * Ai.DISC_WEIGHT + corner);					
 		}
-		
 	}
 }

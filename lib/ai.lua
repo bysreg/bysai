@@ -159,6 +159,8 @@ function monteCarlo(game_state, num_moves)
 	return best_move	
 end
 
+--diasumsikan player selalu jalan gantian, tidak berarti bahwa game tidak bisa membolehkan player jalan lebih dari satu
+--kali berturut2, hanya saja berarti lawannya harus memilih langkah pass
 function miniMax(game_state)
 	local node = miniMaxCreateNode(game_state)
 	local value, move_index = miniMaxRec(node, g_miniMax.depth, math.huge * -1, math.huge)
@@ -184,7 +186,7 @@ function miniMaxRec(node, depth, min, max)
 		end	
 	end
 	
-	local num_of_childs = aif.getNumberOfMoves(node.state)
+	local num_of_childs = aif.getNumberOfMoves(node.state)	
 	if(aif.getTurn(node.state) == 1) then -- maximizing player
 		local v = min
 		local v_t = nil
@@ -193,24 +195,25 @@ function miniMaxRec(node, depth, min, max)
 			local child_node = miniMaxCreateNode(aif.simulate(node.state, i))			
 			v_t = miniMaxRec(child_node, depth-1, v, max)						
 			if(v_t > v) then 
-				v = v_t
+				v = v_t				
 				move_index = i 
 			end
 			if(v >= max) then return max end
-		end
+		end		
 		return v, move_index
 	else -- minimizing player
 		local v = max
 		local v_t = nil
+		local move_index = nil
 		for i=0, num_of_childs-1 do
 			local child_node = miniMaxCreateNode(aif.simulate(node.state, i))
 			v_t = miniMaxRec(child_node, depth-1, min, v)			
-			if(v_t < v) then 
-				v = v_t
+			if(v_t < v) then 				
+				v = v_t				
 				move_index = i  
 			end
 			if(v <= min) then return min end
-		end
+		end		
 		return v, move_index
 	end
 end

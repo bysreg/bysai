@@ -28,12 +28,12 @@ public class Ai {
 	}
 	
 	public Point selectMove(Jothello jothello) {
-		ArrayList<Point> legalMoves = jothello.getAllLegalMoves();
+		ArrayList<Point> legalMoves = jothello.getAllMoves();
 		
         //LuaValue monteCarlo = globals.get("monteCarlo");
         //LuaValue retvals = monteCarlo.call(LuaValue.valueOf(jothello.getGameStateString()), LuaValue.valueOf(jothello.getNumberOfLegalMoves()));
 		LuaValue miniMax = globals.get("miniMax");
-        LuaValue retvals = miniMax.call(LuaValue.valueOf(jothello.getGameStateString()));
+        LuaValue retvals = miniMax.call(LuaValue.valueOf(jothello.getGameStateString()));        
 		return legalMoves.get(retvals.toint());
 	}	
 }

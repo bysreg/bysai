@@ -66,8 +66,8 @@ public class Jothello {
 		// State.DARK dark wins, State.LIGHT light wins, State.TIE tie,
 		// state.NONE nobody wins yet(game hasnt finished yet)
 
-		if (getNumberOfLegalMoves(state.board, State.DARK) != 0
-				|| getNumberOfLegalMoves(state.board, State.LIGHT) != 0) {
+		if (getNumberOfMoves(state.board, State.DARK) != 0
+				|| getNumberOfMoves(state.board, State.LIGHT) != 0) {
 			return State.NONE; // nobody wins yet
 		}
 
@@ -133,8 +133,9 @@ public class Jothello {
 	public static boolean isLegalMove(State state, int row, int col) {
 		return Jothello.isLegalMove(state.board, state.turn, row, col);
 	}
-
-	public static int getNumberOfLegalMoves(byte[][] board, byte turn) {
+	
+	//mengambil jumlah langkah legal(langkah pass tidak dihitung) yang munkgin
+	public static int getNumberOfMoves(byte[][] board, byte turn) {
 		int count = 0;
 
 		for (int i = 0; i < 8; i++) {
@@ -146,16 +147,21 @@ public class Jothello {
 
 		return count;
 	}
-
-	public static int getNumberOfLegalMoves(State state) {
-		return getNumberOfLegalMoves(state.board, state.turn);
+	
+	public int getNumberOfMovesWithPass() {
+		return Math.max(getNumberOfMoves(state), 1);
 	}
 
-	public int getNumberOfLegalMoves() {
-		return Jothello.getNumberOfLegalMoves(state);
+	public static int getNumberOfMoves(State state) {
+		return getNumberOfMoves(state.board, state.turn);
 	}
 
-	public ArrayList<Point> getAllLegalMoves() {
+	public int getNumberOfMoves() {
+		return Jothello.getNumberOfMoves(state);
+	}
+
+	//mengembalikan daftar langkah yang bisa dilakukan (termasuk langkah pass, jika tidak ada langkah legal lain)
+	public ArrayList<Point> getAllMoves() {
 		ArrayList<Point> points = new ArrayList<Point>();
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
@@ -163,7 +169,10 @@ public class Jothello {
 					points.add(new Point(j, i));
 			}
 		}
-
+		
+		if(points.size() == 0)
+			points.add(new Point(-1, -1)); //langkah pass
+		
 		return points;
 	}
 
@@ -172,16 +181,18 @@ public class Jothello {
 	}
 
 	public boolean putPiece(int row, int column) {
+		if(row == -1 && column == -1 && getNumberOfMoves() == 0) {
+			//langkah -1, -1 berarti maksudnya si player ingin pass(hanya bisa jika player tidak punya legal move)	
+			nextTurn();
+			return true;
+		}			
+		
 		if (!isLegalMove(row, column))
 			return false;
 
 		state.board[row][column] = state.turn;
 		flipPiece(row, column);
 		nextTurn();
-		if (getNumberOfLegalMoves() == 0) {
-			// pass to next player
-			nextTurn();
-		}
 		return true;
 	}
 
