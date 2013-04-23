@@ -27,7 +27,8 @@ public class MainWithAi {
 				System.out.printf("sim-%d. turns : %d , result : %d%n", i, count, jothello.whoWin());
 			//}
 		}catch(Exception e) {
-			System.err.println("something's wrong");
+			System.err.println("something's wrong " + e.getMessage());
+			e.printStackTrace();
 		}
 	}
 }

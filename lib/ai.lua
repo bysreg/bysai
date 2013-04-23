@@ -31,6 +31,10 @@ local g_miniMax = {
 	depth = 4,  --const,
 }
 
+globals_ai = {}
+globals_ai.g_monteCarlo = g_monteCarlo
+globals_ai.g_miniMax = g_miniMax
+
 function monteCarloCreateNode(value, parent)
 	return {value = value, parent = parent, result = 0, visit = 0, childs = {}}
 end
@@ -155,46 +159,58 @@ function monteCarlo(game_state, num_moves)
 	return best_move	
 end
 
-function miniMax(game_state, num_moves)
+function miniMax(game_state)
 	local node = miniMaxCreateNode(game_state)
-	miniMaxRec(node, g_miniMax.depth, math.huge * -1, math.huge)
+	local value, move_index = miniMaxRec(node, g_miniMax.depth, math.huge * -1, math.huge)
+	return move_index
 end
 
 function miniMaxCreateNode(state)
-	return {state = state, child = {}}
+	return {state = state}
 end
 
-function miniMaxRec(node, depth, min, max)
+function miniMaxRec(node, depth, min, max)	
+	--log("visit", node.index, depth, min, max)
 	if(depth == 0) then
-		--terminal node
-		return aif.evaluate(node.state)
+		--terminal node		
+		local ret = aif.evaluate(node.state)				
+		return ret
 	else
 		local winner = aif.whoWin(node.state)
 		if(winner == 1) then
 			return math.huge
-		elseif(winner == 2) then
+		elseif(winner == -1) then
 			return math.huge*-1
 		end	
 	end
 	
 	local num_of_childs = aif.getNumberOfMoves(node.state)
-	if(aif.getTurn() == 1) then -- maximizing player
+	if(aif.getTurn(node.state) == 1) then -- maximizing player
 		local v = min
-		local v_t = nil		
+		local v_t = nil
+		local move_index = nil				
 		for i=0, num_of_childs-1 do
-			local child_node = aif.miniMaxCreateNode(aif.simulate(node.state, i))
-			v_t = miniMaxRec(child_node, depth-1, v, max)
-			if(v_t > v) then v = v_t end
+			local child_node = miniMaxCreateNode(aif.simulate(node.state, i))			
+			v_t = miniMaxRec(child_node, depth-1, v, max)						
+			if(v_t > v) then 
+				v = v_t
+				move_index = i 
+			end
 			if(v >= max) then return max end
 		end
+		return v, move_index
 	else -- minimizing player
 		local v = max
 		local v_t = nil
 		for i=0, num_of_childs-1 do
-			local child_node = aif.miniMaxCreateNode(aif.simulate(node.state, i))
-			v_t = miniMaxRec(child_node, depth-1, min, v)
-			if(v_t < v) then v = v_t end
+			local child_node = miniMaxCreateNode(aif.simulate(node.state, i))
+			v_t = miniMaxRec(child_node, depth-1, min, v)			
+			if(v_t < v) then 
+				v = v_t
+				move_index = i  
+			end
 			if(v <= min) then return min end
 		end
+		return v, move_index
 	end
 end

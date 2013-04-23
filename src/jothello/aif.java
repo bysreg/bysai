@@ -25,7 +25,8 @@ public class aif extends TwoArgFunction {
 		library.set("getNumberOfMoves", new getNumberOfMoves());
 		library.set("simulate", new simulate());
 		library.set("whoWin", new whoWin());
-		library.set("getTurn", new getTurn());		
+		library.set("getTurn", new getTurn());
+		library.set("evaluate", new evaluate());
 		env.set("aif", library);
 		return library;
 	}
