@@ -10,7 +10,7 @@ public class MainWithAi {
 			Jothello jothello = new Jothello();
 			int count = 0;
 			do {	
-				//jothello.printBoard();
+				jothello.printBoard();
 				byte turn = jothello.getTurn();		
 				Point p = null;
 				if(turn == State.DARK) {

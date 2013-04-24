@@ -24,7 +24,7 @@ end
 local g_monteCarlo = {
 	map = {}, 
 	size = 0, 
-	time = 100, --const	
+	time = 10, --const	
 }
 
 local g_miniMax = {
@@ -112,7 +112,7 @@ function monteCarloSelectFinal(node)
 		--print(current_avg, k, best_move_index)
 	end		
 	
-	assert(best_move_index, "error on ai.lua : (monteCarlo) no move selected")	
+	assert(best_move_index, "error on ai.lua : (monteCarlo) no move selected", turn, node.value, best_move_avg, current_avg)	
 	return best_move_index
 end
 
