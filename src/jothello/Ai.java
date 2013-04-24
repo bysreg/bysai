@@ -13,8 +13,11 @@ public class Ai {
 	Globals globals;
 	public final static int CORNER_WEIGHT = 10;
 	public final static double DISC_WEIGHT = 0.01;
+	public final static int MONTE_CARLO_TREE_SEARCH = 0;
+	public final static int MINIMAX_ALPHA_BETA = 1;	
+	public final int algo_type;
 	
-	public Ai() {
+	public Ai(int algo_type) {
 		String script = "lib/ai.lua";
 		
 		// create an environment to run in
@@ -24,16 +27,22 @@ public class Ai {
 		LuaValue chunk = globals.loadFile(script);
 		
 		// Use any of the "call()" or "invoke()" functions directly on the chunk.
-		chunk.call( LuaValue.valueOf(script) );			
+		chunk.call( LuaValue.valueOf(script) );
+		
+		this.algo_type = algo_type;
 	}
 	
 	public Point selectMove(Jothello jothello) {
 		ArrayList<Point> legalMoves = jothello.getAllMoves();
+		LuaValue retvals = null;
 		
-        //LuaValue monteCarlo = globals.get("monteCarlo");
-        //LuaValue retvals = monteCarlo.call(LuaValue.valueOf(jothello.getGameStateString()), LuaValue.valueOf(jothello.getNumberOfLegalMoves()));
-		LuaValue miniMax = globals.get("miniMax");
-        LuaValue retvals = miniMax.call(LuaValue.valueOf(jothello.getGameStateString()));        
+		if(algo_type == MONTE_CARLO_TREE_SEARCH) {
+			LuaValue monteCarlo = globals.get("monteCarlo");
+			retvals = monteCarlo.call(LuaValue.valueOf(jothello.getGameStateString()), LuaValue.valueOf(jothello.getNumberOfMoves()));
+		}else {
+			LuaValue miniMax = globals.get("miniMax");
+			retvals = miniMax.call(LuaValue.valueOf(jothello.getGameStateString()));
+		}
 		return legalMoves.get(retvals.toint());
 	}	
 }

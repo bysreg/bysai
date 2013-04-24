@@ -45,8 +45,7 @@ public class aif extends TwoArgFunction {
 			int move_num = arg1.checkint();
 			Jothello jothello = new Jothello(game_state);
 			ArrayList<Point> legalMoves = jothello.getAllMoves();
-			jothello.putPiece(legalMoves.get(move_num).y,
-					legalMoves.get(move_num).x);
+			jothello.putPiece(legalMoves.get(move_num).y, legalMoves.get(move_num).x);
 			return valueOf(jothello.getGameStateString());
 		}
 	}

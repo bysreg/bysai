@@ -5,7 +5,7 @@ import java.util.Scanner;
 
 public class Main {
 	public static void main(String[] args) {		
-		Ai ai = new Ai();	
+		Ai ai = new Ai(Ai.MINIMAX_ALPHA_BETA);	
 		Jothello jothello = new Jothello();
 		Scanner scanner = new Scanner(System.in);
 		do {		

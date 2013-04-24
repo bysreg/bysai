@@ -13,7 +13,7 @@ require "jothello/aif"
 
 math.randomseed(os.time())
 local random = math.random
-local is_log = true
+local is_log = false
 
 function log(...) 
 	if(is_log) then
@@ -24,7 +24,7 @@ end
 local g_monteCarlo = {
 	map = {}, 
 	size = 0, 
-	time = 1000, --const
+	time = 100, --const	
 }
 
 local g_miniMax = {
@@ -39,13 +39,12 @@ function monteCarloCreateNode(value, parent)
 	return {value = value, parent = parent, result = 0, visit = 0, childs = {}}
 end
 
-function monteCarloSelect(node)		
-	local num_moves = aif.getNumberOfMoves(node.value)
-
-	if(num_moves == 0) then
+function monteCarloSelect(node)			
+	if(aif.whoWin(node.value) ~= 2) then -- terminal node that we have visited before, no need to expand
 		return node, -1
 	end
-
+	
+	local num_moves = aif.getNumberOfMoves(node.value)
 	local move_index = random(num_moves)-1	
 	local new_game_state = nil
 	local selected_node = nil
@@ -118,8 +117,7 @@ function monteCarloSelectFinal(node)
 end
 
 --menerima state game_state dengan jumlah kemungkinan move sebanyak num_moves dengan waktu proses maksimum sebanyak time
-function monteCarlo(game_state, num_moves) 	
-	
+function monteCarlo(game_state, num_moves)
 	local start_time = os.time()
 	local time = g_monteCarlo.time
 	local root_node = nil
@@ -135,13 +133,11 @@ function monteCarlo(game_state, num_moves)
 	local move_index = nil
 
 	while(os.time() - start_time < time) do		
-		current_node = root_node
-		
+		current_node = root_node		
 		while(move_index ~= -1 and g_monteCarlo.map[current_node.value] ~= nil) do			
 			last_node = current_node
-			current_node, move_index = monteCarloSelect(current_node)
-		end
-
+			current_node, move_index = monteCarloSelect(current_node)		
+		end		
 		if(move_index ~= -1) then			
 			monteCarloExpand(current_node, move_index, last_node)
 			local result = monteCarloSimulate(current_node) --simulate until terminal node
@@ -151,7 +147,6 @@ function monteCarlo(game_state, num_moves)
 				current_node = current_node.parent
 			end					
 		end
-		
 		--print(os.time() - start_time)
 	end	
 	local best_move = monteCarloSelectFinal(root_node)
@@ -164,6 +159,7 @@ end
 function miniMax(game_state)
 	local node = miniMaxCreateNode(game_state)
 	local value, move_index = miniMaxRec(node, g_miniMax.depth, math.huge * -1, math.huge)
+	log("miniMax : ", value, move_index)
 	return move_index
 end
 
@@ -175,7 +171,7 @@ function miniMaxRec(node, depth, min, max)
 	--log("visit", node.index, depth, min, max)
 	if(depth == 0) then
 		--terminal node		
-		local ret = aif.evaluate(node.state)				
+		local ret = aif.evaluate(node.state)		
 		return ret
 	else
 		local winner = aif.whoWin(node.state)
@@ -198,7 +194,7 @@ function miniMaxRec(node, depth, min, max)
 				v = v_t				
 				move_index = i 
 			end
-			if(v >= max) then return max end
+			if(v >= max) then return max, move_index end
 		end		
 		return v, move_index
 	else -- minimizing player
@@ -212,7 +208,7 @@ function miniMaxRec(node, depth, min, max)
 				v = v_t				
 				move_index = i  
 			end
-			if(v <= min) then return min end
+			if(v <= min) then return min, move_index end
 		end		
 		return v, move_index
 	end
