@@ -1,5 +1,3 @@
-require "jothello/aif"
-
 --[[
 	for all algorithm : 
 	void aif.getTurn(game_state) : return 1 for P1 and return 2 for P2
@@ -170,25 +168,26 @@ end
 function miniMaxRec(node, depth, min, max)	
 	--log("visit", node.index, depth, min, max)
 	if(depth == 0) then
-		--terminal node		
+		--terminal node				
 		local ret = aif.evaluate(node.state)		
 		return ret
 	else
-		local winner = aif.whoWin(node.state)
-		if(winner == 1) then
+		local winner = aif.whoWin(node.state)		
+		if(winner == 1) then		
 			return math.huge
-		elseif(winner == -1) then
+		elseif(winner == -1) then			
 			return math.huge*-1
 		end	
 	end
 	
 	local num_of_childs = aif.getNumberOfMoves(node.state)	
+	assert(num_of_childs>=0, "(minimax alpha beta) : no move to select")
 	if(aif.getTurn(node.state) == 1) then -- maximizing player
 		local v = min
 		local v_t = nil
 		local move_index = nil				
 		for i=0, num_of_childs-1 do
-			local child_node = miniMaxCreateNode(aif.simulate(node.state, i))			
+			local child_node = miniMaxCreateNode(aif.simulate(node.state, i))
 			v_t = miniMaxRec(child_node, depth-1, v, max)						
 			if(v_t > v) then 
 				v = v_t				
@@ -196,20 +195,22 @@ function miniMaxRec(node, depth, min, max)
 			end
 			if(v >= max) then return max, move_index end
 		end		
+		if(move_index == nil) then move_index = random(0, num_of_childs-1) end		
 		return v, move_index
 	else -- minimizing player
 		local v = max
 		local v_t = nil
 		local move_index = nil
 		for i=0, num_of_childs-1 do
-			local child_node = miniMaxCreateNode(aif.simulate(node.state, i))
-			v_t = miniMaxRec(child_node, depth-1, min, v)			
+			local child_node = miniMaxCreateNode(aif.simulate(node.state, i))			
+			v_t = miniMaxRec(child_node, depth-1, min, v)
 			if(v_t < v) then 				
 				v = v_t				
 				move_index = i  
 			end
 			if(v <= min) then return min, move_index end
-		end		
+		end						
+		if(move_index == nil) then move_index = random(0, num_of_childs-1) end		
 		return v, move_index
 	end
 end

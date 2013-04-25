@@ -22,6 +22,7 @@ public class Ai {
 		
 		// create an environment to run in
 		globals = JsePlatform.standardGlobals();
+		globals.load(new aif());
 		
 		// Use the convenience function on the globals to load a chunk.
 		LuaValue chunk = globals.loadFile(script);

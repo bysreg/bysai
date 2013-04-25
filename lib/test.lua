@@ -118,6 +118,12 @@ function aif.evaluate(game_state)
 end
 
 function aif.whoWin(game_state)
+	if(game_state.value == math.huge) then
+		return 1
+	elseif(game_state.value == math.huge*-1) then
+		return -1	
+	end	
+
 	return 2 -- still ongoing
 end
 

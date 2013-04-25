@@ -6,11 +6,13 @@ import java.util.ArrayList;
 import jothello.Jothello;
 import jothello.State;
 
+import org.luaj.vm2.Globals;
+import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.OneArgFunction;
 import org.luaj.vm2.lib.TwoArgFunction;
 
-public class aif extends TwoArgFunction {
+public class aif extends OneArgFunction {
 
 	/**
 	 * Public constructor. To be loaded via require(), the library class must
@@ -20,17 +22,19 @@ public class aif extends TwoArgFunction {
 	}
 
 	@Override
-	public LuaValue call(LuaValue modname, LuaValue env) {
-		LuaValue library = tableOf();
-		library.set("getNumberOfMoves", new getNumberOfMoves());
-		library.set("simulate", new simulate());
-		library.set("whoWin", new whoWin());
-		library.set("getTurn", new getTurn());
-		library.set("evaluate", new evaluate());
-		env.set("aif", library);
-		return library;
+	public LuaValue call(LuaValue env) {
+		Globals globals = env.checkglobals();
+		LuaTable aif = new LuaTable();
+		aif.set("getNumberOfMoves", new getNumberOfMoves());
+		aif.set("simulate", new simulate());
+		aif.set("whoWin", new whoWin());
+		aif.set("getTurn", new getTurn());
+		aif.set("evaluate", new evaluate());
+		env.set("aif", aif);
+		globals.package_.loaded.set("aif", aif);
+		return aif;
 	}
-
+	
 	static class getNumberOfMoves extends OneArgFunction {
 		public LuaValue call(LuaValue arg) {
 			String game_state = arg.checkjstring();
