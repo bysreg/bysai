@@ -4,8 +4,8 @@ import java.awt.Point;
 
 public class MainWithAi {
 	public static void main(String[] args) {
-		Ai ai_1 = new Ai(Ai.MONTE_CARLO_TREE_SEARCH); // dark	
-		Ai ai_2 = new Ai(Ai.MINIMAX_ALPHA_BETA); // light
+		Ai ai_1 = new Ai(Ai.MINIMAX_ALPHA_BETA); // dark	
+		Ai ai_2 = new Ai(Ai.MONTE_CARLO_TREE_SEARCH); // light
 		try {
 			Jothello jothello = new Jothello();
 			int count = 0;

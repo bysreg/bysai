@@ -13,7 +13,7 @@ require "jothello/aif"
 
 math.randomseed(os.time())
 local random = math.random
-local is_log = false
+local is_log = true
 
 function log(...) 
 	if(is_log) then
@@ -24,7 +24,7 @@ end
 local g_monteCarlo = {
 	map = {}, 
 	size = 0, 
-	time = 10, --const	
+	time = 3, --const	
 }
 
 local g_miniMax = {
@@ -118,7 +118,7 @@ end
 
 --menerima state game_state dengan jumlah kemungkinan move sebanyak num_moves dengan waktu proses maksimum sebanyak time
 function monteCarlo(game_state, num_moves)
-	local start_time = os.time()
+	local start_time = os.clock()
 	local time = g_monteCarlo.time
 	local root_node = nil
 	if(g_monteCarlo.map[game_state] ~= nil) then
@@ -132,7 +132,7 @@ function monteCarlo(game_state, num_moves)
 	local last_node = nil
 	local move_index = nil
 
-	while(os.time() - start_time < time) do		
+	while(os.clock() - start_time < time) do		
 		current_node = root_node		
 		while(move_index ~= -1 and g_monteCarlo.map[current_node.value] ~= nil) do			
 			last_node = current_node
@@ -147,7 +147,7 @@ function monteCarlo(game_state, num_moves)
 				current_node = current_node.parent
 			end					
 		end
-		--print(os.time() - start_time)
+		--print(os.clock() - start_time)
 	end	
 	local best_move = monteCarloSelectFinal(root_node)
 	log("best_move : ", best_move, "tree size : ",g_monteCarlo.size, "current sim count : ", count)	

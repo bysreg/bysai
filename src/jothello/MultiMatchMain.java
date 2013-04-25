@@ -5,7 +5,7 @@ import java.awt.Point;
 public class MultiMatchMain {
 	public static void main(String[] args) {
 		Ai ai_1 = new Ai(Ai.MONTE_CARLO_TREE_SEARCH); // dark	
-		Ai ai_2 = new Ai(Ai.MONTE_CARLO_TREE_SEARCH); // light
+		Ai ai_2 = new Ai(Ai.MINIMAX_ALPHA_BETA); // light
 		int winner_1 = 0;
 		int tie = 0;
 		int winner_2 = 0;
