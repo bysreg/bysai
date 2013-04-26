@@ -4,13 +4,16 @@ import java.awt.Point;
 
 public class MultiMatchMain {
 	public static void main(String[] args) {
-		Ai ai_1 = new Ai(Ai.MONTE_CARLO_TREE_SEARCH); // dark	
+		Ai ai_1 = new Ai(Ai.MINIMAX_ALPHA_BETA); // dark		
+		ai_1.setMinimaxTime(4);
 		Ai ai_2 = new Ai(Ai.MINIMAX_ALPHA_BETA); // light
+		ai_2.setMinimaxTime(10);
 		int winner_1 = 0;
 		int tie = 0;
 		int winner_2 = 0;
 		int sim = 100;
 		for(int i=0;i<sim;i++) {
+			int move_count = 0;			
 			Jothello jothello = new Jothello();
 			do {	
 				//jothello.printBoard();
@@ -21,7 +24,9 @@ public class MultiMatchMain {
 				}else{
 					p = ai_2.selectMove(jothello);
 				}					
-				jothello.putPiece(p.y, p.x);							
+				jothello.putPiece(p.y, p.x);
+				move_count++;			
+				//System.out.println(move_count);
 			}while(jothello.whoWin() == State.NONE);			
 			if(jothello.whoWin() == State.DARK) 
 				winner_1++;

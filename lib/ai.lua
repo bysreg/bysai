@@ -11,7 +11,7 @@
 
 math.randomseed(os.time())
 local random = math.random
-local is_log = true
+local is_log = false
 
 function log(...) 
 	if(is_log) then
@@ -25,13 +25,8 @@ local g_monteCarlo = {
 	time = 3, --const	
 }
 
-local g_miniMax = {
-	depth = 4,  --const,
-}
-
 globals_ai = {}
 globals_ai.g_monteCarlo = g_monteCarlo
-globals_ai.g_miniMax = g_miniMax
 
 function monteCarloCreateNode(value, parent)
 	return {value = value, parent = parent, result = 0, visit = 0, childs = {}}
@@ -154,24 +149,40 @@ end
 
 --diasumsikan player selalu jalan gantian, tidak berarti bahwa game tidak bisa membolehkan player jalan lebih dari satu
 --kali berturut2, hanya saja berarti lawannya harus memilih langkah pass
-function miniMax(game_state)
+function miniMax(game_state, param)
+	--print(collectgarbage("count"), "KB")	
+	local depth = 1
 	local node = miniMaxCreateNode(game_state)
-	local value, move_index = miniMaxRec(node, g_miniMax.depth, math.huge * -1, math.huge)
-	log("miniMax : ", value, move_index)
-	return move_index
+	local value, move_index = nil,nil
+	local start_time = os.clock()
+	local time = param.time
+	local elapsed_time = 0
+	local best_move_index = nil
+	
+	repeat
+		value, move_index = miniMaxRec(node, depth, math.huge * -1, math.huge, time, start_time)						
+		elapsed_time = os.clock() - start_time		
+		log("miniMax : ", value, move_index, depth, elapsed_time, time)		
+		if(move_index >= 0) then best_move_index = move_index end 
+		if(elapsed_time > time / 2 or depth > 20) then
+			return best_move_index
+		end
+		depth = depth + 1
+	until (elapsed_time > time) -- timeout
+	return best_move_index
 end
 
 function miniMaxCreateNode(state)
 	return {state = state}
 end
 
-function miniMaxRec(node, depth, min, max)	
+--return -1 if we ran out of time
+function miniMaxRec(node, depth, min, max, max_time, start_time)
 	--log("visit", node.index, depth, min, max)
-	if(depth == 0) then
-		--terminal node				
-		local ret = aif.evaluate(node.state)		
+	if(depth == 0) then --leaf node		
+		local ret = aif.evaluate(node.state)
 		return ret
-	else
+	else -- terminal node
 		local winner = aif.whoWin(node.state)		
 		if(winner == 1) then		
 			return math.huge
@@ -188,12 +199,13 @@ function miniMaxRec(node, depth, min, max)
 		local move_index = nil				
 		for i=0, num_of_childs-1 do
 			local child_node = miniMaxCreateNode(aif.simulate(node.state, i))
-			v_t = miniMaxRec(child_node, depth-1, v, max)						
+			if(os.clock() - start_time > max_time) then return -1,-1 end -- ran out of time			
+			v_t = miniMaxRec(child_node, depth-1, v, max, max_time, start_time)						
 			if(v_t > v) then 
 				v = v_t				
 				move_index = i 
 			end
-			if(v >= max) then return max, move_index end
+			if(v >= max) then return max, move_index end -- prune			
 		end		
 		if(move_index == nil) then move_index = random(0, num_of_childs-1) end		
 		return v, move_index
@@ -203,12 +215,13 @@ function miniMaxRec(node, depth, min, max)
 		local move_index = nil
 		for i=0, num_of_childs-1 do
 			local child_node = miniMaxCreateNode(aif.simulate(node.state, i))			
-			v_t = miniMaxRec(child_node, depth-1, min, v)
+			if(os.clock() - start_time > max_time) then return -1,-1 end -- ran out of time
+			v_t = miniMaxRec(child_node, depth-1, min, v, max_time, start_time)
 			if(v_t < v) then 				
 				v = v_t				
 				move_index = i  
 			end
-			if(v <= min) then return min, move_index end
+			if(v <= min) then return min, move_index end --prune
 		end						
 		if(move_index == nil) then move_index = random(0, num_of_childs-1) end		
 		return v, move_index

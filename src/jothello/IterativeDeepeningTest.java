@@ -2,12 +2,11 @@ package jothello;
 
 import java.awt.Point;
 
-public class MainWithAi {
+public class IterativeDeepeningTest {
+	
 	public static void main(String[] args) {
 		Ai ai_1 = new Ai(Ai.MINIMAX_ALPHA_BETA); // dark	
-		ai_1.setMinimaxTime(2);
-		Ai ai_2 = new Ai(Ai.MINIMAX_ALPHA_BETA); // light
-		ai_2.setMinimaxTime(10);
+		Ai ai_2 = new Ai(Ai.MINIMAX_ALPHA_BETA); // light		
 		Jothello jothello = new Jothello();
 		int count = 0;
 		do {	
@@ -25,6 +24,7 @@ public class MainWithAi {
 			count++;			
 		}while(jothello.whoWin() == State.NONE);
 		System.out.printf("turns : %d , ", count);
-		System.out.println("winner : " + (jothello.whoWin() == State.DARK ? "Dark" : "Light"));				
+		System.out.println("winner : " + (jothello.whoWin() == State.DARK ? "Dark" : "Light"));
 	}
+	
 }
