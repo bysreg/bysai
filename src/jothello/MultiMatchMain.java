@@ -5,7 +5,7 @@ import java.awt.Point;
 public class MultiMatchMain {
 	public static void main(String[] args) {
 		Ai ai_1 = new Ai(Ai.MINIMAX_ALPHA_BETA); // dark		
-		ai_1.setMinimaxTime(4);
+		ai_1.setMinimaxTime(1);
 		Ai ai_2 = new Ai(Ai.MINIMAX_ALPHA_BETA); // light
 		ai_2.setMinimaxTime(10);
 		int winner_1 = 0;
