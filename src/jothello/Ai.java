@@ -39,11 +39,9 @@ public class Ai {
 		monteCarlo = globals.get("monteCarlo");
 		miniMax = globals.get("miniMax");
 		param = new LuaTable();
-		param.set("time", 10);
-	}
-	
-	public void setMinimaxTime(int time) {		
-		param.set("time", time);
+		//param.set("time", 10);
+		//param.set("fixed_depth", 4);
+		param.set("max_depth", 4);
 	}
 	
 	public Point selectMove(Jothello jothello) {

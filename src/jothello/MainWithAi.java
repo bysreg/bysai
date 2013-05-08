@@ -4,10 +4,8 @@ import java.awt.Point;
 
 public class MainWithAi {
 	public static void main(String[] args) {
-		Ai ai_1 = new Ai(Ai.MINIMAX_ALPHA_BETA); // dark
-		ai_1.setMinimaxTime(12);
+		Ai ai_1 = new Ai(Ai.MINIMAX_ALPHA_BETA); // dark		
 		Ai ai_2 = new Ai(Ai.MINIMAX_ALPHA_BETA); // light
-		ai_2.setMinimaxTime(12);
 		Jothello jothello = new Jothello();
 		int count = 0;
 		do {	
