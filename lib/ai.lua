@@ -158,7 +158,7 @@ function miniMax(game_state, param)
 
 	local depth = 1
 	local node = miniMaxCreateNode(game_state)
-	local value, move_index = nil,nil
+	local value, move_index, pv = nil,nil,nil
 	local start_time = os.clock()
 	local elapsed_time = 0
 	local best_move_index = nil
@@ -171,31 +171,34 @@ function miniMax(game_state, param)
 		search_param.max_time = param.time or math.huge
 	end
 	search_param.use_tt = param.use_tt or false -- transposition table
+	search_param.no_tt_move_ordering = param.no_tt_move_ordering or false
 	search_param.start_time = start_time 
 	search_param.node_visit_count = 0
 	search_param.get_pv = param.get_pv or false -- usable only if use_tt is also true
 	search_param.tt = {} -- reserved untuk transposition table (very good to be used with iterative deepening) 
 	
 	miniMaxInitTT(search_param.tt, search_param)
+	local color = aif.getTurn(game_state) == 1 and 1 or -1
 	
 	--fixed depth minimax
 	if(search_param.fixed_depth ~= nil) then
 		search_param.max_time = math.huge
-		value, move_index = miniMaxRec(node, search_param.fixed_depth, math.huge * -1, math.huge, search_param)						
-		log("miniMax","value : ",value,"best_move_index : ",move_index, "depth : ", search_param.fixed_depth, "time : ", search_param.max_time, "tt count : ",search_param.tt.count, "node visited count : ",search_param.node_visit_count)
+		value, move_index = miniMaxRec(node, search_param.fixed_depth, color, math.huge * -1, math.huge, search_param)						
+		if(search_param.get_pv) then pv = miniMaxGetPv(search_param.tt, node) end
 		
-		if(search_param.get_pv) then log("pv : ", table.unpack(miniMaxGetPv(search_param.tt, node))) end
+		log("miniMax","value : ",value,"best_move_index : ",move_index, "depth : ", search_param.fixed_depth, "time : ", search_param.max_time, "tt count : ",search_param.tt.count, "node visited count : ",search_param.node_visit_count, "pv : ", unpack(pv or {}))
 		
 		return move_index
 	end
 	
-	--iterative deepening minimax
+	--iterative deepening minimax	
 	repeat
-		value, move_index = miniMaxRec(node, depth, math.huge * -1, math.huge, search_param)						
+		search_param.node_visit_count = 0
+		value, move_index = miniMaxRec(node, depth, color, math.huge * -1, math.huge, search_param)						
 		elapsed_time = os.clock() - start_time		
-		log("miniMax", "value : ",value, "best_move_index",move_index, "depth : ",depth, "time : ",search_param.max_time, "tt count : ",search_param.tt.count, "node visited count : ",search_param.node_visit_count)
+		if(search_param.get_pv) then pv = miniMaxGetPv(search_param.tt, node) end
 		
-		if(search_param.get_pv) then log("pv : ", table.unpack(miniMaxGetPv(search_param.tt, node))) end
+		log("miniMax", "value : ",value, "best_move_index : ",move_index, "depth : ",depth, "time : ",search_param.max_time, "tt count : ",search_param.tt.count, "node visited count : ",search_param.node_visit_count, "pv : ", unpack(pv or {}))
 		
 		if(move_index >= 0) then 
 			best_move_index = move_index
@@ -213,8 +216,14 @@ function miniMaxCreateNode(state)
 end
 
 --return -1 if we ran out of time (negamax)
-function miniMaxRec(node, depth, min, max, search_param)
-	--log("visit", node.index, depth, min, max)
+function miniMaxRec(node, depth, color, min, max, search_param)
+	local a = nil
+	local b = nil
+	if(search_param.tt[node.state]) then
+		a=search_param.tt[node.state].subtree_eval
+		b=search_param.tt[node.state].best_move_index
+	end
+	log("visit", node.state, depth, min, max, a, b)
 	
 	search_param.node_visit_count = search_param.node_visit_count + 1
 	local winner = aif.whoWin(node.state)
@@ -223,7 +232,8 @@ function miniMaxRec(node, depth, min, max, search_param)
 	elseif(winner == -1) then
 		return math.huge*-1
 	elseif(winner == 0 or depth == 0) then -- seri atau sudah mencapai depth paling bawah
-		return aif.evaluate(node.state)
+		log("evaluate", node.state, aif.evaluate(node.state) * color)
+		return aif.evaluate(node.state) * color
 	end
 	
 	local num_of_moves = aif.getNumberOfMoves(node.state)	
@@ -231,13 +241,15 @@ function miniMaxRec(node, depth, min, max, search_param)
 	local v_t = nil
 	local best_move_index = nil		
 	local move_indexes = miniMaxOrderMoves(node, true, num_of_moves, depth, search_param) -- one- based array
+	log("childs", num_of_moves)
 	for i=1, #move_indexes do						
 		local child_node = miniMaxCreateNode(aif.simulate(node.state, move_indexes[i]))
 		if(os.clock() - search_param.start_time > search_param.max_time) then return -1,-1 end -- ran out of time			
-		v_t = -miniMaxRec(child_node, depth-1, -max, -min, search_param)			
+		v_t = -miniMaxRec(child_node, depth-1, color*-1, -max, -min, search_param)			
 		if(v_t >= max) then 											
-			if(search_param.use_tt) then miniMaxInsertNodeTT(search_param.tt, node, aif.getTurn(node.state) == 1, max, best_move_index, depth) end	
-			if(best_move_index == nil) then best_move_index = move_indexes[i] end
+			if(best_move_index == nil) then log("select best_move_index", move_indexes[i]) best_move_index = move_indexes[i] end
+			if(search_param.use_tt) then log("insert tt") miniMaxInsertNodeTT(search_param.tt, node, aif.getTurn(node.state) == 1, max, best_move_index, depth) end
+			log("value", node.state, best_move_index, max, v_t)
 			return max, best_move_index -- prune 
 		end 		
 		if(v_t > min) then 
@@ -247,7 +259,8 @@ function miniMaxRec(node, depth, min, max, search_param)
 	end				
 	
 	if(best_move_index == nil) then best_move_index = move_indexes[random(1, num_of_moves)] end -- randomize equal valued moves
-	if(search_param.use_tt) then miniMaxInsertNodeTT(search_param.tt, node, aif.getTurn(node.state) == 1, min, best_move_index, depth) end		
+	if(search_param.use_tt) then miniMaxInsertNodeTT(search_param.tt, node, aif.getTurn(node.state) == 1, min, best_move_index, depth) end
+	log("value", node.state, best_move_index)		
 	return min, best_move_index
 end
 
@@ -257,8 +270,10 @@ function miniMaxOrderMoves(cur_node, is_max, num_of_moves, depth, search_param)
 		ret[i] = i-1
 	end 
 	
-	if(search_param.use_tt and search_param.tt[cur_node.state]) then
+	if(not search_param.no_tt_move_ordering and search_param.use_tt and search_param.tt[cur_node.state]) then
 		local entry = search_param.tt[cur_node.state]
+		log("swap", entry.best_move_index)
+		--print(entry.state, entry.subtree_eval,entry.best_move_index, depth)
 		local best_move_index = entry.best_move_index		
 		ret[1] = best_move_index
 		ret[best_move_index + 1] = 0		
@@ -267,9 +282,9 @@ function miniMaxOrderMoves(cur_node, is_max, num_of_moves, depth, search_param)
 	return ret
 end
 
-function miniMaxInsertNodeTT(tt, node, is_max, subtree_eval, best_move_index, depth)	
-	--check apakah node sudah ada	
-	if(tt[node.state] == nil) then
+function miniMaxInsertNodeTT(tt, node, is_max, subtree_eval, best_move_index, depth)		
+	if(tt[node.state] == nil) then -- node sudah ada
+		--print("store", node.state, subtree_eval, best_move_index, depth)
 		if(tt.count > tt.max_count) then
 			miniMaxRandomDeleteTT(tt)
 		end
@@ -279,7 +294,8 @@ function miniMaxInsertNodeTT(tt, node, is_max, subtree_eval, best_move_index, de
 		node.depth = depth
 		node.best_move_index = best_move_index								
 		tt.count = tt.count + 1		
-	else
+	else -- update
+		--print("update", node.state, subtree_eval, best_move_index, depth)
 		local entry = tt[node.state]
 		if(depth > entry.depth) then			
 			entry.depth = depth
@@ -287,6 +303,7 @@ function miniMaxInsertNodeTT(tt, node, is_max, subtree_eval, best_move_index, de
 			entry.subtree_eval = subtree_eval		
 		end
 	end
+	
 end
 
 function miniMaxRandomDeleteTT(tt)
@@ -321,6 +338,5 @@ function miniMaxGetPv(tt, node)
 		node = tt[next_game_state]
 	end
 	
-	print(pv, unpack(pv))
 	return pv
 end

@@ -42,6 +42,9 @@ public class Ai {
 		//param.set("time", 10);
 		//param.set("fixed_depth", 4);
 		param.set("max_depth", 4);
+		param.set("use_tt", LuaValue.valueOf(true));
+		param.set("get_pv", LuaValue.valueOf(true));
+		//param.set("no_tt_move_ordering", LuaValue.valueOf(true));
 	}
 	
 	public Point selectMove(Jothello jothello) {
