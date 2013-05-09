@@ -4,9 +4,10 @@ import java.awt.Point;
 
 public class MainWithAi {
 	public static void main(String[] args) {
-		Ai ai_1 = new Ai(Ai.MINIMAX_ALPHA_BETA); // dark		
-		Ai ai_2 = new Ai(Ai.MINIMAX_ALPHA_BETA); // light
+		Ai ai_1 = new Ai("my_ai_1"); // dark		
+		Ai ai_2 = new Ai("my_ai_2"); // light
 		Jothello jothello = new Jothello();
+		///*
 		int count = 0;
 		do {	
 			jothello.printBoard();
@@ -23,6 +24,7 @@ public class MainWithAi {
 			count++;			
 		}while(jothello.whoWin() == State.NONE);
 		System.out.printf("turns : %d , ", count);
-		System.out.println("winner : " + (jothello.whoWin() == State.DARK ? "Dark" : "Light"));				
+		System.out.println("winner : " + (jothello.whoWin() == State.DARK ? "Dark" : "Light"));
+		//*/				
 	}
 }

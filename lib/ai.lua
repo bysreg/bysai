@@ -25,8 +25,7 @@ end
 
 local g_monteCarlo = {
 	map = {}, 
-	size = 0, 
-	time = 3, --const	
+	size = 0, 	
 }
 
 globals_ai = {}
@@ -114,9 +113,10 @@ function monteCarloSelectFinal(node)
 end
 
 --menerima state game_state dengan jumlah kemungkinan move sebanyak num_moves dengan waktu proses maksimum sebanyak time
-function monteCarlo(game_state, num_moves)
+function monteCarlo(game_state, param)
 	local start_time = os.clock()
-	local time = g_monteCarlo.time
+	local time = param.time
+	local max_tree_size = param.max_tree_size -- fixme
 	local root_node = nil
 	if(g_monteCarlo.map[game_state] ~= nil) then
 		root_node = g_monteCarlo.map[game_state]
@@ -328,4 +328,21 @@ function miniMaxGetPv(tt, node)
 	end
 	
 	return pv
+end
+
+local func_table = {
+	monte_carlo = monteCarlo, 
+	minimax = miniMax, 
+}
+
+local profile = nil
+
+function initProfile(profile_path, profile_name)
+	local loadedInfo = assert(loadfile(profile_path))
+	local profile_table = loadedInfo()
+	profile = profile_table[profile_name]	
+end
+
+function exec(game_state)
+	return func_table[profile.type](game_state, profile)
 end
