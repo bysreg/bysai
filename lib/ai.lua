@@ -23,19 +23,11 @@ function log(...)
 	end
 end
 
-local g_monteCarlo = {
-	map = {}, 
-	size = 0, 	
-}
-
-globals_ai = {}
-globals_ai.g_monteCarlo = g_monteCarlo
-
 function monteCarloCreateNode(value, parent)
 	return {value = value, parent = parent, result = 0, visit = 0, childs = {}}
 end
 
-function monteCarloSelect(node)			
+function monteCarloSelect(node, profile)			
 	if(aif.whoWin(node.value) ~= 2) then -- terminal node that we have visited before, no need to expand
 		return node, -1
 	end
@@ -52,9 +44,9 @@ function monteCarloSelect(node)
 
 	new_game_state = aif.simulate(node.value, move_index)		
 	
-	if(g_monteCarlo.map[new_game_state] ~= nil) then
-		node.childs[move_index] = g_monteCarlo.map[new_game_state]
-		return g_monteCarlo.map[new_game_state], move_index
+	if(profile._mc.map[new_game_state] ~= nil) then
+		node.childs[move_index] = profile._mc.map[new_game_state]
+		return profile._mc.map[new_game_state], move_index
 	end
 		
 	--print("not exist yet", move_index)	
@@ -62,11 +54,11 @@ function monteCarloSelect(node)
 	return selected_node, move_index
 end
 
-function monteCarloExpand(child, move_index, parent)	
-	g_monteCarlo.map[child.value] = child
+function monteCarloExpand(child, move_index, parent, profile)	
+	profile._mc.map[child.value] = child
 	child.parent = parent	
 	parent.childs[move_index] = child	
-	g_monteCarlo.size = g_monteCarlo.size + 1	
+	profile._mc.size = profile._mc.size + 1	
 end
 
 function monteCarloSimulate(node)
@@ -113,30 +105,33 @@ function monteCarloSelectFinal(node)
 end
 
 --menerima state game_state dengan jumlah kemungkinan move sebanyak num_moves dengan waktu proses maksimum sebanyak time
-function monteCarlo(game_state, param)
+function monteCarlo(game_state, profile)
+	profile._mc = profile._mc or {}
+	profile._mc.map = profile._mc.map or {}
+	profile._mc.size = profile._mc.size or 0
 	local start_time = os.clock()
-	local time = param.time
-	local max_tree_size = param.max_tree_size -- fixme
-	local root_node = nil
-	if(g_monteCarlo.map[game_state] ~= nil) then
-		root_node = g_monteCarlo.map[game_state]
-	else		
-		root_node = monteCarloCreateNode(game_state, nil)
-		g_monteCarlo.map[root_node.value] = root_node
-	end			
+	local time = profile.time
+	local max_tree_size = profile.max_tree_size -- fixme
 	local count = 0
 	local current_node = nil
 	local last_node = nil
 	local move_index = nil
+	local root_node = nil
+	if(profile._mc.map[game_state] ~= nil) then
+		root_node = profile._mc.map[game_state]
+	else		
+		root_node = monteCarloCreateNode(game_state, nil)
+		profile._mc.map[root_node.value] = root_node
+	end				
 
 	while(os.clock() - start_time < time) do		
 		current_node = root_node		
-		while(move_index ~= -1 and g_monteCarlo.map[current_node.value] ~= nil) do			
+		while(move_index ~= -1 and profile._mc.map[current_node.value] ~= nil) do			
 			last_node = current_node
-			current_node, move_index = monteCarloSelect(current_node)		
+			current_node, move_index = monteCarloSelect(current_node, profile)		
 		end		
 		if(move_index ~= -1) then			
-			monteCarloExpand(current_node, move_index, last_node)
+			monteCarloExpand(current_node, move_index, last_node, profile)
 			local result = monteCarloSimulate(current_node) --simulate until terminal node
 			count = count + 1
 			while(current_node ~= nil) do
@@ -147,15 +142,13 @@ function monteCarlo(game_state, param)
 		--print(os.clock() - start_time)
 	end	
 	local best_move = monteCarloSelectFinal(root_node)
-	log("best_move : ", best_move, "tree size : ",g_monteCarlo.size, "current sim count : ", count)	
+	log("best_move : ", best_move, "tree size : ",profile._mc.size, "current sim count : ", count)	
 	return best_move	
 end
 
 --diasumsikan player selalu jalan gantian, tidak berarti bahwa game tidak bisa membolehkan player jalan lebih dari satu
 --kali berturut2, hanya saja berarti lawannya harus memilih langkah pass
-function miniMax(game_state, param)
-	if(param == nil) then param = {} end
-
+function miniMax(game_state, profile)
 	local depth = 1
 	local node = miniMaxCreateNode(game_state)
 	local value, move_index, pv = nil,nil,nil
@@ -163,18 +156,18 @@ function miniMax(game_state, param)
 	local elapsed_time = 0
 	local best_move_index = nil
 	local search_param = {}	
-	search_param.fixed_depth = param.fixed_depth -- jika parameter ini tidak nil, parameter max_time dihiraukan dan minimax tidak memakai iterative deepening
-	search_param.max_depth = param.max_depth -- jika paramter ini tidak nil, parameter max_time dihiraukan dan minimax memakai iterative deepening sampai max_depth	
-	if(param.max_depth~=nil) then 
+	search_param.fixed_depth = profile.fixed_depth -- jika parameter ini tidak nil, parameter max_time dihiraukan dan minimax tidak memakai iterative deepening
+	search_param.max_depth = profile.max_depth -- jika paramter ini tidak nil, parameter max_time dihiraukan dan minimax memakai iterative deepening sampai max_depth	
+	if(profile.max_depth~=nil) then 
 		search_param.max_time = math.huge
 	else
-		search_param.max_time = param.time or math.huge
+		search_param.max_time = profile.time or math.huge
 	end
-	search_param.use_tt = param.use_tt or false -- transposition table
-	search_param.no_tt_move_ordering = param.no_tt_move_ordering or false
+	search_param.use_tt = profile.use_tt or false -- transposition table
+	search_param.no_tt_move_ordering = profile.no_tt_move_ordering or false
 	search_param.start_time = start_time 
 	search_param.node_visit_count = 0
-	search_param.get_pv = param.get_pv or false -- usable only if use_tt is also true
+	search_param.get_pv = profile.get_pv or false -- usable only if use_tt is also true
 	search_param.tt = {} -- reserved untuk transposition table (very good to be used with iterative deepening) 
 	
 	miniMaxInitTT(search_param.tt, search_param)
@@ -307,15 +300,15 @@ function miniMaxRandomDeleteTT(tt)
 	tt.count = tt.count - tt.sweep_count
 end
 
-function miniMaxInitTT(tt, param)
-	if(not param.use_tt) then
+function miniMaxInitTT(tt, profile)
+	if(not profile.use_tt) then
 		tt = nil
 		return
 	end
 	tt.count = 0
 		
-	tt.max_count = param.tt_max_count or math.huge
-	tt.sweep_count = param.tt_sweep_count or 500 	
+	tt.max_count = profile.tt_max_count or math.huge
+	tt.sweep_count = profile.tt_sweep_count or 500 	
 end
 
 function miniMaxGetPv(tt, node) 
@@ -335,14 +328,12 @@ local func_table = {
 	minimax = miniMax, 
 }
 
-local profile = nil
-
-function initProfile(profile_path, profile_name)
+function createProfile(profile_path, profile_name) 
 	local loadedInfo = assert(loadfile(profile_path))
 	local profile_table = loadedInfo()
-	profile = profile_table[profile_name]	
+	return profile_table[profile_name]
 end
 
-function exec(game_state)
+function exec(profile, game_state)
 	return func_table[profile.type](game_state, profile)
 end

@@ -7,8 +7,7 @@ public class MainWithAi {
 		Ai ai_1 = new Ai("my_ai_1"); // dark		
 		Ai ai_2 = new Ai("my_ai_2"); // light
 		Jothello jothello = new Jothello();
-		///*
-		int count = 0;
+		int count = 0;		
 		do {	
 			jothello.printBoard();
 			byte turn = jothello.getTurn();		
@@ -25,6 +24,5 @@ public class MainWithAi {
 		}while(jothello.whoWin() == State.NONE);
 		System.out.printf("turns : %d , ", count);
 		System.out.println("winner : " + (jothello.whoWin() == State.DARK ? "Dark" : "Light"));
-		//*/				
 	}
 }
