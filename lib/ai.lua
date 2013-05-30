@@ -156,8 +156,8 @@ function miniMax(game_state, profile)
 	local elapsed_time = 0
 	local best_move_index = nil
 	local search_param = {}	
-	search_param.fixed_depth = profile.fixed_depth -- jika parameter ini tidak nil, parameter max_time dihiraukan dan minimax tidak memakai iterative deepening
-	search_param.max_depth = profile.max_depth -- jika paramter ini tidak nil, parameter max_time dihiraukan dan minimax memakai iterative deepening sampai max_depth	
+	search_param.fixed_depth = profile.fixed_depth -- jika parameter ini tidak nil, parameter time dihiraukan dan minimax tidak memakai iterative deepening
+	search_param.max_depth = profile.max_depth -- jika paramter ini tidak nil, parameter time dihiraukan dan minimax memakai iterative deepening sampai max_depth	
 	if(profile.max_depth~=nil) then 
 		search_param.max_time = math.huge
 	else
@@ -337,3 +337,12 @@ end
 function exec(profile, game_state)
 	return func_table[profile.type](game_state, profile)
 end
+
+--profile_1 as P1 and profile_2 as P2
+function fight(profile_1, profile_2, game_state)
+	local turn = aif.getTurn(game_state)
+	--while(aif.whoWin() == ) do
+	
+	--end
+end
+

@@ -9,8 +9,8 @@ local profiles = {
 	default_minimax = default_minimax, 
 	minimax_without_tt = minimax_without_tt, 
 	minimax_max_depth_with_tt = minimax_max_depth_with_tt, 
-	my_ai_1 = minimax_max_depth_with_tt_no_move_ordering,--{type = "minimax", max_depth = 6, use_tt = true}, 
-	my_ai_2 = minimax_max_depth_with_tt_no_move_ordering,--{type = "minimax", max_depth = 3, use_tt = true}, 
+	my_ai_1 = minimax_max_depth_with_tt,--{type = "minimax", max_depth = 6, use_tt = true}, 
+	my_ai_2 = minimax_max_depth_with_tt,--{type = "minimax", max_depth = 3, use_tt = true}, 
 }
 
 return profiles
